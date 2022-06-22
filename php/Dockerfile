@@ -1,5 +1,9 @@
 # https://hub.docker.com/_/phpにあるイメージファイルを指定
-FROM php:8.0-fpm
+FROM php:8.0-apache
+
+ENV APACHE_DOCUMENT_ROOT /var/www/docker-laravel/recip/public
+RUN sed -ri -e 's!/var/www/docker-laravel!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # RUNコマンドは、buildしたときに元となるdockerイメージに対して実行する処理を記述する。
 # \（バックスラッシュ）を用いて、複数行に分けることが可能。
@@ -28,4 +32,7 @@ RUN apt install -y npm \
     && n stable
 
 # RUN , CMD , ENTRYPOINT , COPY , ADD を実行する時のワーキングディレクトリを指定
-WORKDIR /var/www
+WORKDIR /var/www/docker-laravel
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN a2enmod rewrite
